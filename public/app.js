@@ -7,7 +7,6 @@
   const fileInput = $('#file');
   const quality = $('#quality');
   const qualityOut = $('#qualityOut');
-  const maxDimension = $('#maxDimension');
   const progress = $('#progress');
   const progressText = $('#progressText');
   const errorBox = $('#error');
@@ -40,7 +39,13 @@
   }
 
   // ---------- 업로드 ----------
-  quality.addEventListener('input', () => { qualityOut.textContent = quality.value; });
+  const syncQuality = () => {
+    qualityOut.textContent = quality.value;
+    const pct = ((quality.value - quality.min) / (quality.max - quality.min)) * 100;
+    quality.style.setProperty('--pct', `${pct}%`);
+  };
+  quality.addEventListener('input', syncQuality);
+  syncQuality();
 
   function showError(msg) {
     errorBox.textContent = msg;
@@ -54,7 +59,7 @@
 
     const form = new FormData();
     files.forEach((f) => form.append('images', f));
-    form.append('maxDimension', maxDimension.value);
+    form.append('maxDimension', $('input[name=maxDimension]:checked').value);
     form.append('quality', quality.value);
 
     const xhr = new XMLHttpRequest();
@@ -123,7 +128,7 @@
     $('.stats', node).innerHTML = [
       `원본 <b>${formatBytes(img.originalBytes)}</b> (${img.originalWidth}×${img.originalHeight}, ${img.originalFormat.toUpperCase()})`,
       `→ 저장 <b>${formatBytes(img.storedBytes)}</b>${resized ? ` (${img.width}×${img.height})` : ''}`,
-      img.storedBytes < img.originalBytes ? `<span class="save">−${savedPct(img.originalBytes, img.storedBytes)}%</span>` : '',
+      img.storedBytes < img.originalBytes ? `<span class="pill">−${savedPct(img.originalBytes, img.storedBytes)}%</span>` : '',
     ].join(' ');
 
     const inputs = {
@@ -159,8 +164,8 @@
         if (mine !== seq) return;
         const fmt = (res.headers.get('content-type') || '').replace('image/', '').toUpperCase();
         const pct = savedPct(img.originalBytes, blob.size);
-        result.innerHTML = `이 주소의 결과: <b>${fmt}</b> · <b>${formatBytes(blob.size)}</b>`
-          + (pct > 0 ? ` · 원본 대비 <span class="save" style="color:var(--good);font-weight:700">−${pct}%</span>` : '');
+        result.innerHTML = `결과 <b>${fmt}</b> · <b>${formatBytes(blob.size)}</b>`
+          + (pct > 0 ? ` <span class="pill">−${pct}%</span>` : '');
       } catch {
         if (mine === seq) result.textContent = '변환 결과를 불러오지 못했습니다.';
       }

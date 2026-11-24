@@ -172,6 +172,11 @@ function createApp(overrides = {}) {
     }
   });
 
+  // 웹폰트(Pretendard)를 직접 서빙 — 외부 CDN 의존 없음
+  app.use('/fonts/pretendard', express.static(
+    path.join(path.dirname(require.resolve('pretendard/package.json')), 'dist', 'web', 'variable'),
+    { maxAge: '365d', immutable: true },
+  ));
   app.use(express.static(path.join(__dirname, '..', 'public'), { maxAge: '1h' }));
 
   // eslint-disable-next-line no-unused-vars
