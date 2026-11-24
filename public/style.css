@@ -77,6 +77,9 @@ a { color: inherit; }
 .nav { display: flex; gap: 24px; font-size: 13px; }
 .nav a { color: var(--text-2); text-decoration: none; transition: color .2s; }
 .nav a:hover { color: var(--text); }
+.nav-btn { font: inherit; font-size: 13px; padding: 0; border: 0; background: none; color: var(--text-2); cursor: pointer; transition: color .2s; }
+.nav-btn:hover { color: var(--text); }
+.nav-btn:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
 
 /* ---------- 히어로 ---------- */
 .hero { text-align: center; padding: 72px 16px 48px; }
@@ -159,8 +162,18 @@ input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: var(--focus)
   font-size: 14px; white-space: pre-line;
 }
 
+/* 로그인 */
+.login {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+  padding: 40px 20px; border-radius: var(--radius); background: var(--fill);
+}
+.login strong { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+.login-row { display: flex; gap: 8px; width: 100%; max-width: 360px; margin-top: 20px; }
+.login-row input { flex: 1; background: var(--surface); }
+.login-error { margin: 10px 0 0; font-size: 13px; color: var(--text); font-weight: 500; }
+
 /* ---------- 공통 컨트롤 ---------- */
-input[type=number], input[type=text], select {
+input[type=number], input[type=text], input[type=password], select {
   font: inherit; font-size: 14px; color: var(--text);
   background: var(--fill); border: 1px solid transparent; border-radius: var(--radius-sm);
   padding: 8px 12px; width: 100%; min-width: 0; height: 38px;

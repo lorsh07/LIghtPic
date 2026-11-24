@@ -20,7 +20,7 @@ const binary = (res, cb) => {
 
 before(async () => {
   dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lightpic-test-'));
-  app = createApp({ dataDir, publicBaseUrl: '' });
+  app = createApp({ dataDir, publicBaseUrl: '', uploadPassword: '', apiKeys: [], quiet: true });
   await app.locals.ready;
   // 노이즈가 섞인 큰 사진 대용 이미지
   jpeg = await sharp({ create: { width: 3200, height: 2000, channels: 3, noise: { type: 'gaussian', mean: 128, sigma: 40 } } })

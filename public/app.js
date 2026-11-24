@@ -14,6 +14,11 @@
   const empty = $('#empty');
   const clearBtn = $('#clearHistory');
   const tpl = $('#cardTpl');
+  const loginForm = $('#login');
+  const passwordInput = $('#password');
+  const loginError = $('#loginError');
+  const uploader = $('#uploader');
+  const logoutBtn = $('#logout');
 
   const formatBytes = (n) => {
     if (!Number.isFinite(n)) return '-';
@@ -38,6 +43,65 @@
     clearBtn.hidden = !has;
   }
 
+  // ---------- 로그인 ----------
+  let canUpload = false; // 세션 확인 전까지는 업로드 비활성
+
+  function setAuthState({ authRequired, authenticated, via }) {
+    canUpload = !authRequired || authenticated;
+    loginForm.hidden = canUpload;
+    uploader.hidden = !canUpload;
+    // 쿠키로 로그인한 경우에만 로그아웃 버튼 표시
+    logoutBtn.hidden = !(authRequired && authenticated && via === 'session');
+    if (!canUpload) {
+      progress.hidden = true;
+      showError('');
+    }
+  }
+
+  async function loadSession() {
+    try {
+      const res = await fetch('/api/session', { cache: 'no-store' });
+      setAuthState(await res.json());
+    } catch {
+      setAuthState({ authRequired: false });
+    }
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = loginForm.querySelector('button');
+    btn.disabled = true;
+    loginError.hidden = true;
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: passwordInput.value }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        let msg = body.error || `로그인 실패 (HTTP ${res.status})`;
+        if (res.status === 401 && Number.isFinite(body.remaining)) msg += ` (남은 시도 ${body.remaining}회)`;
+        loginError.textContent = msg;
+        loginError.hidden = false;
+        passwordInput.select();
+        return;
+      }
+      passwordInput.value = '';
+      await loadSession();
+    } catch {
+      loginError.textContent = '네트워크 오류로 로그인하지 못했습니다.';
+      loginError.hidden = false;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    try { await fetch('/api/logout', { method: 'POST' }); } catch { /* 무시 */ }
+    await loadSession();
+  });
+
   // ---------- 업로드 ----------
   const syncQuality = () => {
     qualityOut.textContent = quality.value;
@@ -53,6 +117,7 @@
   }
 
   function upload(files) {
+    if (!canUpload) return undefined;
     files = [...files].filter((f) => f.type.startsWith('image/') || /\.(heic|heif|avif)$/i.test(f.name));
     if (!files.length) return showError('이미지 파일만 업로드할 수 있습니다.');
     showError('');
@@ -79,6 +144,12 @@
     xhr.onload = () => {
       progress.hidden = true;
       const body = xhr.response || {};
+      if (xhr.status === 401) {
+        setAuthState({ authRequired: true, authenticated: false });
+        loginError.textContent = '로그인이 만료되었습니다. 다시 로그인해 주세요.';
+        loginError.hidden = false;
+        return undefined;
+      }
       if (!body.results) return showError(body.error || `업로드 실패 (HTTP ${xhr.status})`);
 
       const failed = [];
@@ -214,4 +285,5 @@
 
   history.forEach((img) => list.append(renderCard(img)));
   refreshEmpty();
+  loadSession();
 })();
