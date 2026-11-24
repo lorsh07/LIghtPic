@@ -14,6 +14,10 @@
   --header: rgba(245, 245, 247, .72);
   --shadow: 0 2px 6px rgba(0, 0, 0, .03), 0 12px 32px rgba(0, 0, 0, .05);
   --focus: 0 0 0 4px rgba(0, 0, 0, .12);
+  /* 배경 점: 색(r,g,b), 평소 투명도, 파도 마루에서의 투명도 */
+  --dot-rgb: 29, 29, 31;
+  --dot-base: .09;
+  --dot-peak: .42;
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%236e6e73' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --radius-lg: 22px;
   --radius: 14px;
@@ -36,6 +40,9 @@
     --header: rgba(22, 22, 23, .72);
     --shadow: none;
     --focus: 0 0 0 4px rgba(255, 255, 255, .18);
+    --dot-rgb: 245, 245, 247;
+    --dot-base: .08;
+    --dot-peak: .7;
     --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%23a1a1a6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     color-scheme: dark;
   }
@@ -43,6 +50,12 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+#dots {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  /* 글자가 있는 화면 가운데는 점을 흐리게 해서 읽기 편하게 */
+  -webkit-mask-image: radial-gradient(ellipse 34% 42% at 50% 40%, rgba(0, 0, 0, .12) 30%, #000 100%);
+  mask-image: radial-gradient(ellipse 34% 42% at 50% 40%, rgba(0, 0, 0, .12) 30%, #000 100%);
+}
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 64px; }
 body {
   margin: 0;
