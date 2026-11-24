@@ -286,7 +286,11 @@ function createApp(overrides = {}) {
     path.join(path.dirname(require.resolve('pretendard/package.json')), 'dist', 'web', 'variable'),
     { maxAge: '365d', immutable: true },
   ));
-  app.use(express.static(path.join(__dirname, '..', 'public'), { maxAge: '1h' }));
+  // 화면 파일(HTML·CSS·JS)은 매번 바뀌었는지 확인하게 한다.
+  // 배포 직후 새 HTML과 캐시된 옛 CSS가 섞여 화면이 깨지는 것을 막기 위함 (안 바뀌었으면 304로 짧게 응답)
+  app.use(express.static(path.join(__dirname, '..', 'public'), {
+    setHeaders(res) { res.setHeader('Cache-Control', 'no-cache'); },
+  }));
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
