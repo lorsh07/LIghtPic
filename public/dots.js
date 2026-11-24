@@ -109,6 +109,8 @@
   });
   const onScheme = () => { readColors(); start(); };
   darkScheme.addEventListener?.('change', onScheme);
+  // 테마 전환 버튼으로 바꾼 경우
+  new MutationObserver(onScheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   reduceMotion.addEventListener?.('change', start);
 
   readColors();
