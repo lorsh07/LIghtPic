@@ -5,100 +5,136 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LightPic</title>
   <meta name="description" content="이미지를 올리면 용량을 줄이고 AVIF·WebP로 변환해 주는 이미지 CDN">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234f46e5'/><path d='M8 22l5-6 4 4 3-3 4 5z' fill='white'/><circle cx='21' cy='11' r='2.5' fill='white'/></svg>">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231d1d1f'/><path d='M8 22l5-6 4 4 3-3 4 5z' fill='white'/><circle cx='21' cy='11' r='2.5' fill='white'/></svg>">
+  <link rel="preload" href="/fonts/pretendard/pretendardvariable-dynamic-subset.css" as="style">
+  <link rel="stylesheet" href="/fonts/pretendard/pretendardvariable-dynamic-subset.css">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="top">
     <div class="wrap top-inner">
       <a class="brand" href="/">
-        <span class="logo" aria-hidden="true"></span>
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M8 22l5-6 4 4 3-3 4 5z"/><circle cx="21" cy="11" r="2.5"/></svg>
         LightPic
       </a>
-      <span class="tag">이미지 경량화 · 포맷 변환 CDN</span>
+      <nav class="nav">
+        <a href="#upload">업로드</a>
+        <a href="#images">내 이미지</a>
+        <a href="#docs">사용법</a>
+        <button id="logout" class="nav-btn" type="button" hidden>로그아웃</button>
+      </nav>
     </div>
   </header>
 
-  <main class="wrap">
-    <section class="hero">
-      <h1>이미지를 올리면, 가볍게 만들어 CDN 주소로 드려요</h1>
-      <p>업로드한 이미지는 크기를 줄이고 메타데이터를 지운 뒤 저장됩니다. 받은 주소에 파라미터만 붙이면 원하는 크기와 형식(AVIF, WebP, JPEG, PNG)으로 바로 변환됩니다.</p>
+  <main>
+    <section class="hero wrap">
+      <p class="eyebrow">이미지 경량화 CDN</p>
+      <h1>더 가볍게.<br>더 빠르게.</h1>
+      <p class="lede">이미지를 올리면 크기를 줄이고 메타데이터를 지워 저장합니다. 받은 주소에 옵션만 붙이면 원하는 크기와 형식으로 바로 변환됩니다.</p>
+      <ul class="formats" aria-label="지원 출력 형식">
+        <li>AVIF</li><li>WebP</li><li>JPEG</li><li>PNG</li>
+      </ul>
     </section>
 
-    <section class="panel">
-      <label id="drop" class="drop" tabindex="0">
-        <input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,image/gif,image/tiff" multiple hidden>
-        <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <strong>이미지를 끌어다 놓거나 클릭해서 선택</strong>
-        <span class="muted">JPEG · PNG · WebP · AVIF · HEIC · GIF · TIFF · 파일당 최대 20MB, 한 번에 10개</span>
-      </label>
+    <section id="upload" class="wrap">
+      <div class="panel">
+        <form id="login" class="login" hidden>
+          <span class="drop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+          </span>
+          <strong>로그인이 필요합니다</strong>
+          <span class="drop-sub">업로드하려면 비밀번호를 입력하세요. 이미지 주소는 누구나 볼 수 있습니다.</span>
+          <div class="login-row">
+            <input id="password" type="password" autocomplete="current-password" placeholder="비밀번호" aria-label="비밀번호" required>
+            <button class="btn primary" type="submit">로그인</button>
+          </div>
+          <p id="loginError" class="login-error" role="alert" hidden></p>
+        </form>
+        <div id="uploader" hidden>
+        <label id="drop" class="drop" tabindex="0">
+          <input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,image/gif,image/tiff" multiple hidden>
+          <span class="drop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4.5 4.5M12 4l4.5 4.5M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+          </span>
+          <strong>이미지를 끌어다 놓으세요</strong>
+          <span class="drop-sub">또는 <u>파일 선택</u> · 붙여넣기(⌘V / Ctrl+V)도 됩니다</span>
+          <span class="drop-meta">JPEG · PNG · WebP · AVIF · HEIC · GIF · TIFF — 파일당 20MB, 한 번에 10개</span>
+        </label>
 
-      <div class="options">
-        <label class="field">
-          <span>저장 시 최대 크기 (긴 변)</span>
-          <select id="maxDimension">
-            <option value="1280">1280px</option>
-            <option value="1920">1920px</option>
-            <option value="2560" selected>2560px</option>
-            <option value="4000">4000px</option>
-          </select>
-        </label>
-        <label class="field">
-          <span>저장 품질 <output id="qualityOut">85</output></span>
-          <input id="quality" type="range" min="40" max="100" value="85">
-        </label>
+        <div class="options">
+          <fieldset class="field">
+            <legend>저장 시 최대 크기 <span class="hint">긴 변 기준</span></legend>
+            <div class="segmented" role="radiogroup">
+              <label><input type="radio" name="maxDimension" value="1280"><span>1280</span></label>
+              <label><input type="radio" name="maxDimension" value="1920"><span>1920</span></label>
+              <label><input type="radio" name="maxDimension" value="2560" checked><span>2560</span></label>
+              <label><input type="radio" name="maxDimension" value="4000"><span>4000</span></label>
+            </div>
+          </fieldset>
+          <label class="field">
+            <span class="legend">저장 품질 <output id="qualityOut">85</output></span>
+            <input id="quality" type="range" min="40" max="100" value="85">
+          </label>
+        </div>
+        </div>
+        <div id="progress" class="progress" hidden><div class="bar"></div><span id="progressText">업로드 중…</span></div>
+        <p id="error" class="error" role="alert" hidden></p>
       </div>
-      <div id="progress" class="progress" hidden><div class="bar"></div><span id="progressText">업로드 중…</span></div>
-      <p id="error" class="error" role="alert" hidden></p>
     </section>
 
-    <section>
+    <section id="images" class="wrap">
       <div class="section-head">
-        <h2>업로드한 이미지</h2>
-        <button id="clearHistory" class="ghost small" type="button" hidden>목록 비우기</button>
+        <h2>내 이미지</h2>
+        <button id="clearHistory" class="btn secondary small" type="button" hidden>목록 비우기</button>
       </div>
-      <p id="empty" class="muted empty">아직 업로드한 이미지가 없습니다. 이 목록은 현재 브라우저에만 저장됩니다.</p>
+      <p id="empty" class="empty">아직 업로드한 이미지가 없습니다.<br><span>이 목록은 현재 브라우저에만 저장됩니다.</span></p>
       <ul id="list" class="list"></ul>
     </section>
 
-    <section class="docs">
-      <h2>CDN 주소 사용법</h2>
-      <pre><code>https://<span class="hl">호스트</span>/cdn/<span class="hl">{id}</span>?w=800&amp;h=600&amp;fit=cover&amp;q=75&amp;f=avif</code></pre>
-      <table>
-        <thead><tr><th>파라미터</th><th>설명</th><th>기본값</th></tr></thead>
-        <tbody>
-          <tr><td><code>w</code>, <code>h</code></td><td>가로·세로 픽셀 (최대 4000). 원본보다 커지지 않음</td><td>원본</td></tr>
-          <tr><td><code>f</code></td><td><code>auto</code> · <code>avif</code> · <code>webp</code> · <code>jpeg</code> · <code>png</code>. <code>auto</code>는 브라우저가 지원하는 가장 가벼운 형식을 고름</td><td><code>auto</code></td></tr>
-          <tr><td><code>q</code></td><td>품질 1–100</td><td><code>80</code></td></tr>
-          <tr><td><code>fit</code></td><td><code>inside</code> · <code>cover</code> · <code>contain</code> · <code>outside</code> · <code>fill</code></td><td><code>inside</code></td></tr>
-        </tbody>
-      </table>
-      <p class="muted">확장자로도 형식을 지정할 수 있습니다: <code>/cdn/{id}.webp?w=640</code>. 변환 결과는 캐시되며, 응답에는 1년짜리 <code>Cache-Control: immutable</code> 헤더가 붙어 앞단 CDN에서도 그대로 캐시됩니다.</p>
+    <section id="docs" class="wrap docs">
+      <div class="section-head"><h2>CDN 주소 사용법</h2></div>
+      <pre><code>https://<em>호스트</em>/cdn/<em>{id}</em>?w=800&amp;h=600&amp;fit=cover&amp;q=75&amp;f=avif</code></pre>
+      <div class="table">
+        <div class="row head"><span>파라미터</span><span>설명</span><span>기본값</span></div>
+        <div class="row"><span><code>w</code> <code>h</code></span><span>가로·세로 픽셀 (최대 4000). 원본보다 커지지 않음</span><span>원본</span></div>
+        <div class="row"><span><code>f</code></span><span><code>auto</code> <code>avif</code> <code>webp</code> <code>jpeg</code> <code>png</code> — <code>auto</code>는 브라우저가 지원하는 가장 가벼운 형식을 고름</span><span>auto</span></div>
+        <div class="row"><span><code>q</code></span><span>품질 1–100</span><span>80</span></div>
+        <div class="row"><span><code>fit</code></span><span><code>inside</code> <code>cover</code> <code>contain</code> <code>outside</code> <code>fill</code></span><span>inside</span></div>
+      </div>
+      <p class="note">확장자로도 형식을 지정할 수 있습니다 — <code>/cdn/{id}.webp?w=640</code>. 변환 결과는 캐시되며 1년짜리 <code>Cache-Control: immutable</code> 헤더가 붙어 앞단 CDN에서도 그대로 캐시됩니다.</p>
     </section>
   </main>
+
+  <footer class="foot wrap">LightPic · 글꼴 Pretendard</footer>
 
   <template id="cardTpl">
     <li class="card">
       <a class="thumb" target="_blank" rel="noopener"><img alt="" loading="lazy"></a>
       <div class="body">
         <div class="card-head">
-          <h3 class="name"></h3>
-          <button class="ghost small remove" type="button" title="목록에서 제거" aria-label="목록에서 제거">✕</button>
+          <div class="title">
+            <h3 class="name"></h3>
+            <p class="stats"></p>
+          </div>
+          <button class="icon-btn remove" type="button" title="목록에서 제거" aria-label="목록에서 제거">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
         </div>
-        <p class="stats"></p>
         <div class="builder">
-          <label class="field mini"><span>가로</span><input class="b-w" type="number" min="1" max="4000" placeholder="원본"></label>
-          <label class="field mini"><span>세로</span><input class="b-h" type="number" min="1" max="4000" placeholder="원본"></label>
+          <label class="field mini"><span>가로</span><input class="b-w" type="number" min="1" max="4000" placeholder="원본" inputmode="numeric"></label>
+          <label class="field mini"><span>세로</span><input class="b-h" type="number" min="1" max="4000" placeholder="원본" inputmode="numeric"></label>
           <label class="field mini"><span>형식</span>
             <select class="b-f">
-              <option value="auto">auto</option>
+              <option value="auto">자동</option>
               <option value="avif">AVIF</option>
               <option value="webp">WebP</option>
               <option value="jpeg">JPEG</option>
               <option value="png">PNG</option>
             </select>
           </label>
-          <label class="field mini"><span>품질</span><input class="b-q" type="number" min="1" max="100" placeholder="80"></label>
+          <label class="field mini"><span>품질</span><input class="b-q" type="number" min="1" max="100" placeholder="80" inputmode="numeric"></label>
           <label class="field mini"><span>맞춤</span>
             <select class="b-fit">
               <option value="">inside</option>
@@ -110,10 +146,10 @@
         </div>
         <div class="url-row">
           <input class="url" type="text" readonly aria-label="CDN 주소">
-          <button class="copy" type="button">복사</button>
-          <a class="open ghost" target="_blank" rel="noopener">열기</a>
+          <button class="btn primary copy" type="button">복사</button>
+          <a class="btn secondary open" target="_blank" rel="noopener">열기</a>
         </div>
-        <p class="result muted"></p>
+        <p class="result"></p>
       </div>
     </li>
   </template>

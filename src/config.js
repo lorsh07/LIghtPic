@@ -15,3 +15,26 @@ module.exports = {
   maxTransformDimension: int(process.env.MAX_TRANSFORM_DIMENSION, 4000),
   defaultQuality: int(process.env.DEFAULT_QUALITY, 80),
 };
+
+const list = (v) => String(v || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+Object.assign(module.exports, {
+  production: process.env.NODE_ENV === 'production',
+  // ---------- 인증 ----------
+  // 웹 화면 로그인 비밀번호
+  uploadPassword: process.env.UPLOAD_PASSWORD || '',
+  // 스크립트/서버용 API 키 (쉼표로 여러 개). Authorization: Bearer <키>
+  apiKeys: list(process.env.API_KEYS),
+  // 세션 쿠키 서명 키. 비워 두면 시작할 때마다 새로 만들어져 재시작 시 로그아웃됨
+  sessionSecret: process.env.SESSION_SECRET || '',
+  sessionTtlHours: int(process.env.SESSION_TTL_HOURS, 24 * 7),
+  // 리버스 프록시(Nginx, Cloudflare 등) 뒤에서 실제 IP를 쓰려면 설정 (예: 1, loopback)
+  trustProxy: process.env.TRUST_PROXY || false,
+  // ---------- 요청 횟수 제한 ----------
+  // 로그인 실패: IP당 15분에 N회
+  rateLimitLogin: int(process.env.RATE_LIMIT_LOGIN, 5),
+  // 업로드: 사용자(또는 IP)당 1시간에 이미지 N장
+  rateLimitUploads: int(process.env.RATE_LIMIT_UPLOADS, 100),
+  // CDN 새 변환(캐시 MISS): IP당 1분에 N회. 캐시 HIT는 제한 없음
+  rateLimitTransforms: int(process.env.RATE_LIMIT_TRANSFORMS, 60),
+});
