@@ -122,3 +122,13 @@ test('메타데이터 API', async () => {
   assert.equal(res.body.id, img.id);
   await request(app).get('/api/images/nope').expect(404);
 });
+
+test('화면 파일은 매번 재검증하고, 글꼴은 오래 캐시한다', async () => {
+  for (const file of ['/', '/style.css', '/app.js', '/dots.js', '/theme.js']) {
+    const res = await request(app).get(file).expect(200);
+    assert.equal(res.headers['cache-control'], 'no-cache', file);
+    assert.ok(res.headers.etag, file);
+  }
+  const font = await request(app).get('/fonts/pretendard/pretendardvariable-dynamic-subset.css').expect(200);
+  assert.match(font.headers['cache-control'], /immutable/);
+});
